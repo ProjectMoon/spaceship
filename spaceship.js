@@ -139,7 +139,6 @@ function Sprite(image) {
 }
 
 Sprite.prototype.drawCentredAt = function (ctx, cx, cy, rotation) {
-	// This is how to implement default parameters...
 	if (rotation === undefined) rotation = 0;
 	var halfHeight = this._image.height / 2;
 	var halfWidth = this._image.width / 2;
@@ -164,17 +163,14 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 		}
 		else {
 			//regular (one direction) wrap
-			if (wrap.xWrap) {
-				var centerX = cx - (this._image.width / 2);
-				var centerY = cy - (this._image.height / 2);
-				
+			if (wrap.xWrap) {				
 				if (wrap.xDirection == 'left') {
 					//draw duplicate image canvas width + "relative" away.
 					//relative = the "invisible" pixels.
 					//must rotate each one individually or else the duplicate
 					//rotates round the image as a radius.
 					var relative = this._getLeftXRelative(cx);
-
+					var centerX = cx - (this._image.width / 2);
 					var rightX = centerX + g_canvas.width + relative;
 
 					ctx.save();
@@ -184,7 +180,6 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 				}
 				else if (wrap.xDirection == 'right') {
 					var relative = this._getRightXRelative(cx);
-
 					var leftX = -g_canvas.width;
 
 					ctx.save();
@@ -193,8 +188,17 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 					ctx.restore();					
 				}
 			}
-			else {
+			else if (wrap.yWrap) {
+				if (wrap.yDirection == 'top') {
+					var relative = this._getTopYRelative(cy);
+					var centerY = cy - (this._image.height / 2);
+					var shift = centerY + g_canvas.height + relative;
 
+					ctx.save();
+					ctx.translate(0, shift);
+					this.drawCentredAt(ctx, cx, cy, rotation);
+					ctx.restore();					
+				}
 			}
 			this.drawCentredAt(ctx, cx, cy, rotation);
 		}
@@ -256,12 +260,12 @@ Sprite.prototype._getRightXRelative = function(cx) {
 
 Sprite.prototype._getTopYRelative = function(cy) {
 	//cy = centered y coord of the sprite.
-	return Math.abs(cy - (this.image.height / 2));
+	return Math.abs(cy - (this._image.height / 2));
 };
 
 Sprite.prototype._getBottomYRelative = function(cy) {
 	//cy = centered y coord of the sprite.
-	return Math.abs((cy + this.image.height / 2) - g_canvas.height);
+	return Math.abs((cy + this._image.height / 2) - g_canvas.height);
 };
 
 // ==========
@@ -408,8 +412,8 @@ var g_extraShip1 = new Ship({
 });
 
 var g_extraShip2 = new Ship({
-	cx : 390,//260,
-	cy : 200
+	cx : 260,
+	cy : 10//200
 });
 
 // =====
