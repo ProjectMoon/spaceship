@@ -150,72 +150,70 @@ Sprite.prototype.drawCentredAt = function (ctx, cx, cy, rotation) {
 };	 
 
 Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
-	//8 cases:
-	//x wrap left, x wrap right
-	//y wrap top, y wrap bottom
-	//wrap at each of the 4 corners
+	//draw duplicate images width + "relative" away.
+	//relative = the "invisible" pixels.
+	//must rotate each one individually or else the duplicate
+	//rotates round the image as a radius.
 	var wrap = this._detectWrap(cx, cy);
+	var xShift, yShift;
 
 	if (wrap.xWrap || wrap.yWrap) {
-		//corner wrap? draw in diagonally opposite corner.
-		//other wrapping logic will take care of the other
-		//corners.
-		if (wrap.xWrap && wrap.yWrap) {
-
-		}
-
-		//regular (one direction) wrap
 		if (wrap.xWrap) {				
 			if (wrap.xDirection == 'left') {
-				//draw duplicate image canvas width + "relative" away.
-				//relative = the "invisible" pixels.
-				//must rotate each one individually or else the duplicate
-				//rotates round the image as a radius.
 				var relative = this._getLeftXRelative(cx);
 				var centerX = cx - (this._image.width / 2);
-				var shift = centerX + g_canvas.width + relative;
+				xShift = centerX + g_canvas.width + relative;
 
 				ctx.save();
-				ctx.translate(shift, 0);
+				ctx.translate(xShift, 0);
 				this.drawCentredAt(ctx, cx, cy, rotation);
 				ctx.restore();
 			}
 			else if (wrap.xDirection == 'right') {
 				var relative = this._getRightXRelative(cx);
-				var shift = -g_canvas.width;
+				xShift = -g_canvas.width;
 
 				ctx.save();
-				ctx.translate(shift, 0);
+				ctx.translate(xShift, 0);
 				this.drawCentredAt(ctx, cx, cy, rotation);
 				ctx.restore();					
 			}
 		}
+		
 		if (wrap.yWrap) {
 			if (wrap.yDirection == 'top') {
 				var relative = this._getTopYRelative(cy);
 				var centerY = cy - (this._image.height / 2);
-				var shift = centerY + g_canvas.height + relative;
+				yShift = centerY + g_canvas.height + relative;
 
 				ctx.save();
-				ctx.translate(0, shift);
+				ctx.translate(0, yShift);
 				this.drawCentredAt(ctx, cx, cy, rotation);
 				ctx.restore();
 			}
 			else if (wrap.yDirection == 'bottom') {
 				var relative = this._getTopYRelative(cy);
-				var shift = -g_canvas.height;
+				yShift = -g_canvas.height;
 
 				ctx.save();
-				ctx.translate(0, shift);
+				ctx.translate(0, yShift);
 				this.drawCentredAt(ctx, cx, cy, rotation);
 				ctx.restore();
 			}
 		}
-		this.drawCentredAt(ctx, cx, cy, rotation);
+
+		//corner wrap? draw 4th sprite in diagonally opposite corner
+		//using the already calculated shifts.
+		if (wrap.xWrap && wrap.yWrap) {
+			ctx.save();
+			ctx.translate(xShift, yShift);
+			this.drawCentredAt(ctx, cx, cy, rotation);
+			ctx.restore();
+		}
 	}
-	else {
-		this.drawCentredAt(ctx, cx, cy, rotation);
-	}
+
+	//draw the originally requested sprite.
+	this.drawCentredAt(ctx, cx, cy, rotation);
 };
 
 Sprite.prototype._detectWrap = function(cx, cy) {
@@ -422,8 +420,8 @@ var g_extraShip1 = new Ship({
 });
 
 var g_extraShip2 = new Ship({
-	cx : 390, //260,
-	cy : 390//200
+	cx : 400, //260,
+	cy : 400//200
 });
 
 // =====
