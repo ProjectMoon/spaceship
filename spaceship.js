@@ -157,60 +157,61 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 	var wrap = this._detectWrap(cx, cy);
 
 	if (wrap.xWrap || wrap.yWrap) {
-		//corner wrap?
+		//corner wrap? draw in diagonally opposite corner.
+		//other wrapping logic will take care of the other
+		//corners.
 		if (wrap.xWrap && wrap.yWrap) {
 
 		}
-		else {
-			//regular (one direction) wrap
-			if (wrap.xWrap) {				
-				if (wrap.xDirection == 'left') {
-					//draw duplicate image canvas width + "relative" away.
-					//relative = the "invisible" pixels.
-					//must rotate each one individually or else the duplicate
-					//rotates round the image as a radius.
-					var relative = this._getLeftXRelative(cx);
-					var centerX = cx - (this._image.width / 2);
-					var rightX = centerX + g_canvas.width + relative;
 
-					ctx.save();
-					ctx.translate(rightX, 0);
-					this.drawCentredAt(ctx, cx, cy, rotation);
-					ctx.restore();
-				}
-				else if (wrap.xDirection == 'right') {
-					var relative = this._getRightXRelative(cx);
-					var leftX = -g_canvas.width;
+		//regular (one direction) wrap
+		if (wrap.xWrap) {				
+			if (wrap.xDirection == 'left') {
+				//draw duplicate image canvas width + "relative" away.
+				//relative = the "invisible" pixels.
+				//must rotate each one individually or else the duplicate
+				//rotates round the image as a radius.
+				var relative = this._getLeftXRelative(cx);
+				var centerX = cx - (this._image.width / 2);
+				var shift = centerX + g_canvas.width + relative;
 
-					ctx.save();
-					ctx.translate(leftX, 0);
-					this.drawCentredAt(ctx, cx, cy, rotation);
-					ctx.restore();					
-				}
+				ctx.save();
+				ctx.translate(shift, 0);
+				this.drawCentredAt(ctx, cx, cy, rotation);
+				ctx.restore();
 			}
-			else if (wrap.yWrap) {
-				if (wrap.yDirection == 'top') {
-					var relative = this._getTopYRelative(cy);
-					var centerY = cy - (this._image.height / 2);
-					var shift = centerY + g_canvas.height + relative;
+			else if (wrap.xDirection == 'right') {
+				var relative = this._getRightXRelative(cx);
+				var shift = -g_canvas.width;
 
-					ctx.save();
-					ctx.translate(0, shift);
-					this.drawCentredAt(ctx, cx, cy, rotation);
-					ctx.restore();
-				}
-				else if (wrap.yDirection == 'bottom') {
-					var relative = this._getTopYRelative(cy);
-					var shift = -g_canvas.height;
-
-					ctx.save();
-					ctx.translate(0, shift);
-					this.drawCentredAt(ctx, cx, cy, rotation);
-					ctx.restore();
-				}
+				ctx.save();
+				ctx.translate(shift, 0);
+				this.drawCentredAt(ctx, cx, cy, rotation);
+				ctx.restore();					
 			}
-			this.drawCentredAt(ctx, cx, cy, rotation);
 		}
+		if (wrap.yWrap) {
+			if (wrap.yDirection == 'top') {
+				var relative = this._getTopYRelative(cy);
+				var centerY = cy - (this._image.height / 2);
+				var shift = centerY + g_canvas.height + relative;
+
+				ctx.save();
+				ctx.translate(0, shift);
+				this.drawCentredAt(ctx, cx, cy, rotation);
+				ctx.restore();
+			}
+			else if (wrap.yDirection == 'bottom') {
+				var relative = this._getTopYRelative(cy);
+				var shift = -g_canvas.height;
+
+				ctx.save();
+				ctx.translate(0, shift);
+				this.drawCentredAt(ctx, cx, cy, rotation);
+				ctx.restore();
+			}
+		}
+		this.drawCentredAt(ctx, cx, cy, rotation);
 	}
 	else {
 		this.drawCentredAt(ctx, cx, cy, rotation);
@@ -421,7 +422,7 @@ var g_extraShip1 = new Ship({
 });
 
 var g_extraShip2 = new Ship({
-	cx : 260,
+	cx : 390, //260,
 	cy : 390//200
 });
 
