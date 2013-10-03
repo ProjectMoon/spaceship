@@ -127,6 +127,11 @@ window.addEventListener("mousemove", handleMouse);
 // SPRITE STUFF
 // ============
 
+function rotate(ctx, cx, cy, rotation) {
+	ctx.translate(cx, cy);
+	ctx.rotate(rotation);
+	ctx.translate(-cx, -cy);
+}
 // Construct a "sprite" from the given `image`
 //
 function Sprite(image) {
@@ -140,15 +145,8 @@ Sprite.prototype.drawCentredAt = function (ctx, cx, cy, rotation) {
 	var halfWidth = this._image.width / 2;
 
 	ctx.save();
-
-	if (rotation != 0) {
-		ctx.translate(cx, cy);
-		ctx.rotate(rotation);
-		ctx.translate(-cx, -cy);
-   }
-	
+	if (rotation != 0) rotate(ctx, cx, cy, rotation);
 	ctx.drawImage(this._image, cx - halfWidth, cy - halfHeight);
-	
 	ctx.restore();
 };	 
 
@@ -168,31 +166,21 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 			//regular (one direction) wrap
 			if (wrap.xWrap) {
 				if (wrap.xDirection == 'left') {
-					//acquire relative coordinate of cutoff (with image 0,0
-					//as beginning).
-					//cut all of image off to the right of relative coord
-					//draw image on right end of screen, shifted left by relative
-					//coord.
+					//draw duplicate image canvas width + "relative" away.
+					//relative = the "invisible" pixels.
+					//must rotate each one individually or else the duplicate
+					//rotates round the image as a radius.
 					var relative = Math.abs(this._getLeftXRelative(cx));
 					
-					ctx.save();
-					//translate to the opposite from the other end
-					ctx.translate(100, 0);
 					var centerX = cx - (this._image.width / 2);
 					var centerY = cy - (this._image.height / 2);
 
-					//drawImage, clipped to only draw the "invisible" part
-					//the clipping uses 0,0 as the top left of the image?
+					var rightX = centerX + g_canvas.width + relative;
 
-					//TODO Fix rightX calculation and figure out why drawing at
-					//280ish puts it on the edge
-					var rightX = centerX + g_canvas.width - this._image.width;
-					ctx.drawImage(this._image, 0, 0, Math.abs(relative),
-									  this._image.height, rightX, 100,
-									  Math.abs(relative), this._image.height);
-
-
-					//ctx.drawImage(this._image, 30, 30, 20, 20, 30, 30, 20, 20);
+					ctx.save();
+					ctx.translate(rightX, 0);
+					if (rotation != 0) rotate(ctx, cx, cy, rotation);
+					ctx.drawImage(this._image, centerX, centerY);
 					ctx.restore();
 				}
 				else if (wrap.xDirection == 'right') {
@@ -228,6 +216,7 @@ Sprite.prototype._detectWrap = function(cx, cy) {
 		xDirection: '',
 		yDirection: ''
 	};
+	
 	if (centerX - this._image.width < 0) {
 		wrap.xWrap = true;
 		wrap.xDirection = 'left';
@@ -403,8 +392,8 @@ Ship.prototype.render = function (ctx) {
 // -------------------
 
 var g_ship = new Ship({
-	cx : 15,//140,
-	cy : 130
+	cx : 140,
+	cy : 200
 });
 
 var g_extraShip1 = new Ship({
