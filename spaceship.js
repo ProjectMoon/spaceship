@@ -197,7 +197,16 @@ Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
 					ctx.save();
 					ctx.translate(0, shift);
 					this.drawCentredAt(ctx, cx, cy, rotation);
-					ctx.restore();					
+					ctx.restore();
+				}
+				else if (wrap.yDirection == 'bottom') {
+					var relative = this._getTopYRelative(cy);
+					var shift = -g_canvas.height;
+
+					ctx.save();
+					ctx.translate(0, shift);
+					this.drawCentredAt(ctx, cx, cy, rotation);
+					ctx.restore();
 				}
 			}
 			this.drawCentredAt(ctx, cx, cy, rotation);
@@ -413,7 +422,7 @@ var g_extraShip1 = new Ship({
 
 var g_extraShip2 = new Ship({
 	cx : 260,
-	cy : 10//200
+	cy : 390//200
 });
 
 // =====
