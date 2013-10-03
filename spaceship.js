@@ -153,7 +153,120 @@ Sprite.prototype.drawCentredAt = function (ctx, cx, cy, rotation) {
 };	 
 
 Sprite.prototype.drawWrappedCentredAt = function (ctx, cx, cy, rotation) {
-	this.drawCentredAt(ctx, cx, cy, rotation);
+	//8 cases:
+	//x wrap left, x wrap right
+	//y wrap top, y wrap bottom
+	//wrap at each of the 4 corners
+	var wrap = this._detectWrap(cx, cy);
+
+	if (wrap.xWrap || wrap.yWrap) {
+		//corner wrap?
+		if (wrap.xWrap && wrap.yWrap) {
+
+		}
+		else {
+			//regular (one direction) wrap
+			if (wrap.xWrap) {
+				if (wrap.xDirection == 'left') {
+					//acquire relative coordinate of cutoff (with image 0,0
+					//as beginning).
+					//cut all of image off to the right of relative coord
+					//draw image on right end of screen, shifted left by relative
+					//coord.
+					var relative = Math.abs(this._getLeftXRelative(cx));
+					
+					ctx.save();
+					//translate to the opposite from the other end
+					ctx.translate(100, 0);
+					var centerX = cx - (this._image.width / 2);
+					var centerY = cy - (this._image.height / 2);
+
+					//drawImage, clipped to only draw the "invisible" part
+					//the clipping uses 0,0 as the top left of the image?
+
+					//TODO Fix rightX calculation and figure out why drawing at
+					//280ish puts it on the edge
+					var rightX = centerX + g_canvas.width - this._image.width;
+					ctx.drawImage(this._image, 0, 0, Math.abs(relative),
+									  this._image.height, rightX, 100,
+									  Math.abs(relative), this._image.height);
+
+
+					//ctx.drawImage(this._image, 30, 30, 20, 20, 30, 30, 20, 20);
+					ctx.restore();
+				}
+				else if (wrap.xDirection == 'right') {
+					
+				}
+			}
+			else {
+
+			}
+			this.drawCentredAt(ctx, cx, cy, rotation);
+		}
+	}
+	else {
+		this.drawCentredAt(ctx, cx, cy, rotation);
+	}
+};
+
+Sprite.prototype._detectWrap = function(cx, cy) {
+	var halfHeight = this._image.height / 2;
+	var halfWidth = this._image.width / 2;
+
+	var centerX = cx - halfWidth;
+	var centerY = cy - halfHeight;
+
+	//if centerX - image width < 0, left x wrap
+	//if centerX + image width > canvas width, right x wrap
+	//if centerY - image height < 0, top y wrap
+	//if centerY + image height > canvas height, bottom y wrap
+	//corners detected by combos of this.
+	var wrap = {
+		xWrap: false,
+		leftWrap: false,
+		xDirection: '',
+		yDirection: ''
+	};
+	if (centerX - this._image.width < 0) {
+		wrap.xWrap = true;
+		wrap.xDirection = 'left';
+	}
+	else if (centerX + this._image.width > g_canvas.width) {
+		wrap.xWrap = true;
+		wrap.xDirection = 'right';
+	}
+
+	if (centerY - this._image.height < 0) {
+		wrap.yWrap = true;
+		wrap.yDirection = 'top';
+	}
+	else if (centerY + this._image.height > g_canvas.height) {
+		wrap.yWrap = true;
+		wrap.yDirection = 'bottom';
+	}
+
+	return wrap;
+};
+
+Sprite.prototype._getLeftXRelative = function(cx) {
+	//cx = centered x coord of the sprite.
+	return cx - (this._image.width / 2);
+};
+
+Sprite.prototype._getRightXRelative = function(cx) {
+	//cx = centered x coord of the sprite.
+	return (cx + this._image.width / 2) - g_canvas.width;
+};
+
+Sprite.prototype._getTopYRelative = function(cy) {
+	//cy = centered y coord of the sprite.
+	return cy - (this.image.height / 2);
+};
+
+Sprite.prototype._getBottomYRelative = function(cy) {
+	//cy = centered y coord of the sprite.
+	return (cy + this.image.height / 2) - g_canvas.height;
 };
 
 // ==========
@@ -290,8 +403,8 @@ Ship.prototype.render = function (ctx) {
 // -------------------
 
 var g_ship = new Ship({
-	cx : 140,
-	cy : 200
+	cx : 15,//140,
+	cy : 130
 });
 
 var g_extraShip1 = new Ship({
