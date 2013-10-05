@@ -429,6 +429,22 @@ Ship.prototype.wrapPosition = function () {
 	//
 	// YOUR STUFF HERE
 	// ...
+
+	if (this.cx < 0) {
+		this.cx = g_canvas.width;
+	}
+
+	if (this.cx > g_canvas.width) {
+		this.cx = 0;
+	}
+
+	if (this.cy < 0) {
+		this.cy = g_canvas.height;
+	}
+
+	if (this.cy > g_canvas.height) {
+		this.cy = 0;
+	}
 };
 
 Ship.prototype.render = function (ctx) {
