@@ -89,6 +89,10 @@ function handleKeyup(evt) {
 	g_keys[evt.keyCode] = false;
 }
 
+function info(num, text) {
+	document.getElementById('info' + num).innerText = text;
+}
+
 // Inspects, and then clears, a key's state
 //
 // This allows a keypress to be "one-shot" e.g. for toggles
@@ -285,6 +289,10 @@ function Ship(descr) {
 	for (var property in descr) {
 		this[property] = descr[property];
 	}
+
+	//copy default values from prototype
+	this.velX = Ship.prototype.velX;
+	this.velY = Ship.prototype.velY;
 	
 	// Remember my reset positions
 	this.reset_cx = this.cx;
@@ -303,7 +311,6 @@ Ship.prototype.velX = 0;
 Ship.prototype.velY = 0;
 
 Ship.prototype.update = function (du) {
-	
 	var thrust = this.computeThrustMag();
 
 	// Apply thrust directionally, based on our rotation
@@ -313,7 +320,11 @@ Ship.prototype.update = function (du) {
 	accelY += this.computeGravity();
 
 	this.applyAccel(accelX, accelY, du);
-	
+	var text = this.velY + ' (' + accelY + '; ' + du + ')';
+	if (this == g_ship) info(1, text);
+	if (this == g_extraShip1) info(2, text);
+	if (this == g_extraShip2) info(3, text);
+
 	this.wrapPosition();
 	
 	if (thrust === 0 || g_allowMixedActions) {
@@ -330,6 +341,7 @@ Ship.prototype.computeGravity = function () {
 	
 	// YOUR STUFF HERE
 	// ...
+	return 0;
 };
 
 var NOMINAL_THRUST = +0.2;
@@ -342,8 +354,18 @@ Ship.prototype.computeThrustMag = function () {
 	//
 	// (NB: Both may be on simultaneously, in which case they combine.)
 	
-	// YOUR STUFF HERE
+	// YOUR STUFF HERE		return NOMINAL_RETRO;
 	// ...
+	var thrust = 0;
+
+	if (g_keys[this.KEY_THRUST]) {
+		thrust += NOMINAL_THRUST;
+	}
+	if (g_keys[this.KEY_RETRO]) {
+		thrust += NOMINAL_RETRO;
+	}
+	
+	return thrust;
 };
 
 Ship.prototype.applyAccel = function (accelX, accelY, du) {
@@ -359,6 +381,20 @@ Ship.prototype.applyAccel = function (accelX, accelY, du) {
 	
 	// YOUR STUFF HERE
 	// ...
+	this.velX += (accelX * du);
+	this.velY += (accelY * du);
+	if (accelX == 0) {
+		this.velX *= 0;
+	}
+
+	if (accelY == 0) {
+		this.velY *= 0;
+	}
+	if (isNaN(this.velX)) this.velX = 0;
+	if (isNaN(this.velY)) this.velY = 0;
+
+	this.cx += this.velX * du;
+	this.cy += this.velY * du;
 };
 
 Ship.prototype.reset = function () {
@@ -420,8 +456,8 @@ var g_extraShip1 = new Ship({
 });
 
 var g_extraShip2 = new Ship({
-	cx : 400, //260,
-	cy : 400//200
+	cx : 260,
+	cy : 200
 });
 
 // =====
