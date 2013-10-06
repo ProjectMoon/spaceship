@@ -118,9 +118,9 @@ function handleMouse(evt) {
 	
 	var x = evt.clientX - g_canvas.offsetLeft;
 	var y = evt.clientY - g_canvas.offsetTop;
-	
-	// YOUR STUFF HERE
-	// ...
+
+	g_ship.cx = x;
+	g_ship.cy = y;
 }
 
 // Handle "down" and "move" events the same way.
@@ -141,6 +141,10 @@ function rotate(ctx, cx, cy, rotation) {
 function Sprite(image) {
 	this._image = image;
 }
+
+Sprite.prototype.getHeight = function() {
+	return this._image.height;
+};
 
 Sprite.prototype.drawCentredAt = function (ctx, cx, cy, rotation) {
 	if (rotation === undefined) rotation = 0;
@@ -289,10 +293,6 @@ function Ship(descr) {
 	for (var property in descr) {
 		this[property] = descr[property];
 	}
-
-	//copy default values from prototype
-	this.velX = Ship.prototype.velX;
-	this.velY = Ship.prototype.velY;
 	
 	// Remember my reset positions
 	this.reset_cx = this.cx;
@@ -338,9 +338,7 @@ Ship.prototype.computeGravity = function () {
 	
 	// If gravity is enabled, return the NOMINAL_GRAVITY value
 	// See the "GAME-SPECIFIC DIAGNOSTICS" section for details.
-	
-	// YOUR STUFF HERE
-	// ...
+
 	if (g_useGravity) return NOMINAL_GRAVITY;
 	else return 0;
 };
@@ -355,8 +353,6 @@ Ship.prototype.computeThrustMag = function () {
 	//
 	// (NB: Both may be on simultaneously, in which case they combine.)
 	
-	// YOUR STUFF HERE		return NOMINAL_RETRO;
-	// ...
 	var thrust = 0;
 
 	if (g_keys[this.KEY_THRUST]) {
@@ -380,16 +376,36 @@ Ship.prototype.applyAccel = function (accelX, accelY, du) {
 	// The effect of the bounce should be to reverse the
 	// y-component of the velocity, and then reduce it by 10%
 	
-	// YOUR STUFF HERE
-	// ...
 	this.velX += (accelX * du);
 	this.velY += (accelY * du);
 
-	if (isNaN(this.velX)) this.velX = 0;
-	if (isNaN(this.velY)) this.velY = 0;
-
 	this.cx += this.velX * du;
-	this.cy += this.velY * du;
+	
+	if (g_useGravity) {
+		if (Math.abs(this.velY) - NOMINAL_GRAVITY > 0) {
+			//top collisions
+			var nextPos = this.cy - g_shipSprite.getHeight() / 2;
+			nextPos += this.velY * du;
+
+			if (nextPos > 0) {
+				this.cy += this.velY * du;
+			}
+			else {
+				this.velY = -this.velY;
+			}
+		}
+
+		//bottom collisions
+		if (this.velY > 0) {
+			if (this.cy + g_shipSprite.getHeight() / 2 > g_canvas.height) {
+				this.velY = -this.velY;
+				this.velY *= .9;
+			}
+		}
+	}
+	else {
+		this.cy += this.velY * du;
+	}
 };
 
 Ship.prototype.reset = function () {
@@ -422,8 +438,6 @@ Ship.prototype.wrapPosition = function () {
 	// Don't let the ship's centre-coordinates fall outside
 	// the bounds of the playfield.
 	//
-	// YOUR STUFF HERE
-	// ...
 
 	if (this.cx < 0) {
 		this.cx = g_canvas.width;
@@ -445,9 +459,6 @@ Ship.prototype.wrapPosition = function () {
 Ship.prototype.render = function (ctx) {
 	
 	// NB: The preloaded ship sprite object is called `g_shipSprite`
-	
-	// YOUR STUFF HERE
-	// ...
 
 	g_shipSprite.drawWrappedCentredAt(ctx, this.cx, this.cy, this.rotation);
 };
@@ -565,9 +576,6 @@ function processDiagnostics() {
 	// NB: The HALT and RESET behaviours should apply to
 	// all three ships simulaneously.
 	
-	// YOUR STUFF HERE
-	// ...
-
 	if (eatKey(KEY_MIXED)) g_allowMixedActions = !g_allowMixedActions;
 	if (eatKey([KEY_EXTRAS])) g_useExtras = !g_useExtras;
 	if (eatKey(KEY_GRAVITY)) g_useGravity = !g_useGravity;
