@@ -341,7 +341,8 @@ Ship.prototype.computeGravity = function () {
 	
 	// YOUR STUFF HERE
 	// ...
-	return 0;
+	if (g_useGravity) return NOMINAL_GRAVITY;
+	else return 0;
 };
 
 var NOMINAL_THRUST = +0.2;
@@ -383,13 +384,7 @@ Ship.prototype.applyAccel = function (accelX, accelY, du) {
 	// ...
 	this.velX += (accelX * du);
 	this.velY += (accelY * du);
-	if (accelX == 0) {
-		this.velX *= 0;
-	}
 
-	if (accelY == 0) {
-		this.velY *= 0;
-	}
 	if (isNaN(this.velX)) this.velX = 0;
 	if (isNaN(this.velY)) this.velY = 0;
 
@@ -572,6 +567,22 @@ function processDiagnostics() {
 	
 	// YOUR STUFF HERE
 	// ...
+
+	if (eatKey(KEY_MIXED)) g_allowMixedActions = !g_allowMixedActions;
+	if (eatKey([KEY_EXTRAS])) g_useExtras = !g_useExtras;
+	if (eatKey(KEY_GRAVITY)) g_useGravity = !g_useGravity;
+	
+	if (g_keys[KEY_HALT]) {
+		g_ship.halt();
+		g_extraShip1.halt();
+		g_extraShip2.halt();
+	}
+	
+	if (g_keys[KEY_RESET]) {
+		g_ship.reset();
+		g_extraShip1.reset();
+		g_extraShip2.reset();
+	}
 }
 
 // --------------------
