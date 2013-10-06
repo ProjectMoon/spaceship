@@ -89,10 +89,6 @@ function handleKeyup(evt) {
 	g_keys[evt.keyCode] = false;
 }
 
-function info(num, text) {
-	document.getElementById('info' + num).innerText = text;
-}
-
 // Inspects, and then clears, a key's state
 //
 // This allows a keypress to be "one-shot" e.g. for toggles
@@ -320,11 +316,6 @@ Ship.prototype.update = function (du) {
 	accelY += this.computeGravity();
 
 	this.applyAccel(accelX, accelY, du);
-	var text = this.velY + ' (' + accelY + '; ' + du + ')';
-	if (this == g_ship) info(1, text);
-	if (this == g_extraShip1) info(2, text);
-	if (this == g_extraShip2) info(3, text);
-
 	this.wrapPosition();
 	
 	if (thrust === 0 || g_allowMixedActions) {
